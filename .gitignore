@@ -1,0 +1,19 @@
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Editor temp files
+*.swp
+*.swo
+*~
+
+# Microsoft Office temp/lock files
+~$*.doc
+~$*.docx
+~$*.ppt
+~$*.pptx
+~$*.xls
+~$*.xlsx
+
+# Workspace content not tracked in the root repo
+/docs/
