@@ -17,3 +17,8 @@ Thumbs.db
 
 # Workspace content not tracked in the root repo
 /docs/
+/docs/.DS_Store
+/docs/Thumbs.db
+/docs/.vscode/
+/docs
+
