@@ -1,24 +1,18 @@
-# OS metadata
+# Dependencies
+node_modules/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# OS files
 .DS_Store
 Thumbs.db
 
-# Editor temp files
-*.swp
-*.swo
-*~
+# IDE
+.vscode/
+.idea/
 
-# Microsoft Office temp/lock files
-~$*.doc
-~$*.docx
-~$*.ppt
-~$*.pptx
-~$*.xls
-~$*.xlsx
-
-# Workspace content not tracked in the root repo
-/docs/
-/docs/.DS_Store
-/docs/Thumbs.db
-/docs/.vscode/
-/docs
-
+# Docs
+docs/
