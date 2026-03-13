@@ -1,0 +1,843 @@
+[
+  {
+    "id": "TC-PROF-001",
+    "title": "Landing page loads with seeded profile",
+    "category": "profile_and_identity",
+    "priority": "P0",
+    "weight": 3,
+    "prdRequirementIds": ["PRD-1.1"],
+    "mode": "browser",
+    "currentlyImplemented": true,
+    "preconditions": ["Fresh browser context"],
+    "steps": [
+      { "action": "navigate", "target": "/" },
+      { "action": "waitForSelector", "target": "h1.gradient-text" }
+    ],
+    "assertions": [
+      { "type": "textContent", "selector": "h1.gradient-text", "contains": "Alex Rivera" },
+      { "type": "visible", "selector": "img[alt]" },
+      { "type": "visible", "selector": "section.glass" }
+    ],
+    "expectedBehavior": "Landing page renders with profile name 'Alex Rivera', avatar, title, bio, and event timeline",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-PROF-002",
+    "title": "Profile edit modal opens and saves changes",
+    "category": "profile_and_identity",
+    "priority": "P0",
+    "weight": 3,
+    "prdRequirementIds": ["PRD-1.2"],
+    "mode": "browser",
+    "currentlyImplemented": true,
+    "preconditions": ["Seed data loaded"],
+    "steps": [
+      { "action": "navigate", "target": "/" },
+      { "action": "click", "target": "button:has-text('Edit')" },
+      { "action": "waitForSelector", "target": "h2:has-text('Edit Profile')" },
+      { "action": "clearAndType", "target": "input", "value": "Test User", "index": 0 },
+      { "action": "click", "target": "button:has-text('Save Changes')" }
+    ],
+    "assertions": [
+      { "type": "textContent", "selector": "h1.gradient-text", "contains": "Test User" }
+    ],
+    "expectedBehavior": "Clicking Edit opens the profile modal. Changing name and saving updates the display immediately.",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-PROF-003",
+    "title": "Profile changes persist after page refresh",
+    "category": "profile_and_identity",
+    "priority": "P1",
+    "weight": 2,
+    "prdRequirementIds": ["PRD-1.2"],
+    "mode": "browser",
+    "currentlyImplemented": true,
+    "preconditions": ["Profile has been edited to 'Test User'"],
+    "steps": [
+      { "action": "reload" },
+      { "action": "waitForSelector", "target": "h1.gradient-text" }
+    ],
+    "assertions": [
+      { "type": "textContent", "selector": "h1.gradient-text", "contains": "Test User" }
+    ],
+    "expectedBehavior": "After refresh, the edited profile name persists via localStorage",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-PROF-004",
+    "title": "Seed data re-initializes after localStorage clear",
+    "category": "profile_and_identity",
+    "priority": "P1",
+    "weight": 2,
+    "prdRequirementIds": ["PRD-1.1"],
+    "mode": "browser",
+    "currentlyImplemented": true,
+    "preconditions": [],
+    "steps": [
+      { "action": "evaluate", "script": "localStorage.clear()" },
+      { "action": "reload" },
+      { "action": "waitForSelector", "target": "h1.gradient-text" }
+    ],
+    "assertions": [
+      { "type": "textContent", "selector": "h1.gradient-text", "contains": "Alex Rivera" }
+    ],
+    "expectedBehavior": "Clearing localStorage and refreshing causes seed data to re-initialize with 'Alex Rivera'",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-EVT-001",
+    "title": "New Event page loads with URL input form",
+    "category": "event_intake_extraction",
+    "priority": "P0",
+    "weight": 3,
+    "prdRequirementIds": ["PRD-2.1"],
+    "mode": "browser",
+    "currentlyImplemented": true,
+    "preconditions": [],
+    "steps": [
+      { "action": "navigate", "target": "/event/new" },
+      { "action": "waitForSelector", "target": "#event-url" }
+    ],
+    "assertions": [
+      { "type": "visible", "selector": "h1:has-text('Add New Event')" },
+      { "type": "visible", "selector": "#event-url" },
+      { "type": "visible", "selector": "button[type='submit']" }
+    ],
+    "expectedBehavior": "The /event/new page renders with heading, URL input field, and submit button",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-EVT-002",
+    "title": "Extraction API returns valid contract for valid URL",
+    "category": "event_intake_extraction",
+    "priority": "P0",
+    "weight": 5,
+    "prdRequirementIds": ["PRD-2.2"],
+    "mode": "api",
+    "currentlyImplemented": true,
+    "preconditions": [],
+    "steps": [
+      { "action": "post", "target": "/api/events/extract", "body": { "url": "https://example.com" } }
+    ],
+    "assertions": [
+      { "type": "status", "expected": 200 },
+      { "type": "jsonPath", "path": "meta.title", "notEmpty": true },
+      { "type": "jsonPath", "path": "meta.date", "matchesRegex": "^\\d{4}-\\d{2}-\\d{2}$" },
+      { "type": "jsonPath", "path": "meta.location", "expected": "Virtual / TBD" },
+      { "type": "jsonPath", "path": "meta.description", "contains": "example.com" }
+    ],
+    "expectedBehavior": "POST with valid URL returns 200 with meta containing title, ISO date, location, and description",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-EVT-003",
+    "title": "Extraction API falls back gracefully on unreachable URL",
+    "category": "event_intake_extraction",
+    "priority": "P0",
+    "weight": 3,
+    "prdRequirementIds": ["PRD-2.2"],
+    "mode": "api",
+    "currentlyImplemented": true,
+    "preconditions": [],
+    "steps": [
+      { "action": "post", "target": "/api/events/extract", "body": { "url": "https://this-domain-does-not-exist-99999.com" } }
+    ],
+    "assertions": [
+      { "type": "status", "expected": 200 },
+      { "type": "jsonPath", "path": "meta.title", "expected": "Untitled Event" }
+    ],
+    "expectedBehavior": "Unreachable URLs still return 200 with fallback title 'Untitled Event'",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-EVT-004",
+    "title": "Extraction API rejects missing URL",
+    "category": "event_intake_extraction",
+    "priority": "P0",
+    "weight": 3,
+    "prdRequirementIds": ["PRD-2.2"],
+    "mode": "api",
+    "currentlyImplemented": true,
+    "preconditions": [],
+    "steps": [
+      { "action": "post", "target": "/api/events/extract", "body": {} }
+    ],
+    "assertions": [
+      { "type": "status", "expected": 400 },
+      { "type": "jsonPath", "path": "error", "notEmpty": true }
+    ],
+    "expectedBehavior": "POST without url field returns 400 with error message",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-EVT-005",
+    "title": "End-to-end event creation from URL via UI",
+    "category": "event_intake_extraction",
+    "priority": "P0",
+    "weight": 5,
+    "prdRequirementIds": ["PRD-2.1", "PRD-2.2"],
+    "mode": "browser",
+    "currentlyImplemented": true,
+    "preconditions": ["Seed data loaded"],
+    "steps": [
+      { "action": "navigate", "target": "/event/new" },
+      { "action": "fill", "target": "#event-url", "value": "https://example.com" },
+      { "action": "click", "target": "button[type='submit']" },
+      { "action": "waitForURL", "pattern": "**/event/**" }
+    ],
+    "assertions": [
+      { "type": "urlContains", "value": "/event/" },
+      { "type": "visible", "selector": "h1.gradient-text" }
+    ],
+    "expectedBehavior": "Submitting a URL extracts metadata, creates event, and redirects to event dashboard",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-EVT-006",
+    "title": "Extracted event metadata is editable",
+    "category": "event_intake_extraction",
+    "priority": "P1",
+    "weight": 3,
+    "prdRequirementIds": ["PRD-2.3"],
+    "mode": "browser",
+    "currentlyImplemented": true,
+    "preconditions": ["An event exists (navigate to evt-1)"],
+    "steps": [
+      { "action": "navigate", "target": "/event/evt-1" },
+      { "action": "waitForSelector", "target": "h1.gradient-text" },
+      { "action": "click", "target": "button:has-text('Edit')" },
+      { "action": "waitForSelector", "target": "h2:has-text('Edit Event')" }
+    ],
+    "assertions": [
+      { "type": "visible", "selector": "h2:has-text('Edit Event')" },
+      { "type": "visible", "selector": "input[type='date']" },
+      { "type": "visible", "selector": "button:has-text('Save Changes')" }
+    ],
+    "expectedBehavior": "Clicking Edit on the event dashboard opens the event editor modal with current values",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-SES-001",
+    "title": "Add session with all fields",
+    "category": "sessions_and_notes",
+    "priority": "P0",
+    "weight": 5,
+    "prdRequirementIds": ["PRD-3.1"],
+    "mode": "browser",
+    "currentlyImplemented": true,
+    "preconditions": ["Navigate to evt-1"],
+    "steps": [
+      { "action": "navigate", "target": "/event/evt-1" },
+      { "action": "waitForSelector", "target": "h2:has-text('Sessions')" },
+      { "action": "click", "target": "button:has-text('Add Session')" },
+      { "action": "fill", "target": "input[placeholder='Session title']", "value": "Test Session Alpha" },
+      { "action": "fill", "target": "input[placeholder='Speaker name']", "value": "Jane Doe" },
+      { "action": "fill", "target": "input[placeholder*='Time']", "value": "02:00 PM" },
+      { "action": "fill", "target": "textarea[placeholder*='Key takeaway']", "value": "Important insight" },
+      { "action": "click", "target": "button[type='submit']:has-text('Add Session')" }
+    ],
+    "assertions": [
+      { "type": "textVisible", "text": "Test Session Alpha" },
+      { "type": "textVisible", "text": "Jane Doe" }
+    ],
+    "expectedBehavior": "Filling all session fields and submitting adds the session to the list",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-SES-002",
+    "title": "Add session with only required title field",
+    "category": "sessions_and_notes",
+    "priority": "P1",
+    "weight": 2,
+    "prdRequirementIds": ["PRD-3.1"],
+    "mode": "browser",
+    "currentlyImplemented": true,
+    "preconditions": ["Navigate to evt-2"],
+    "steps": [
+      { "action": "navigate", "target": "/event/evt-2" },
+      { "action": "waitForSelector", "target": "h2:has-text('Sessions')" },
+      { "action": "click", "target": "button:has-text('Add Session')" },
+      { "action": "fill", "target": "input[placeholder='Session title']", "value": "Minimal Session" },
+      { "action": "click", "target": "button[type='submit']:has-text('Add Session')" }
+    ],
+    "assertions": [
+      { "type": "textVisible", "text": "Minimal Session" }
+    ],
+    "expectedBehavior": "A session with only the title field is accepted and displayed",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-SES-003",
+    "title": "Delete session from event",
+    "category": "sessions_and_notes",
+    "priority": "P0",
+    "weight": 3,
+    "prdRequirementIds": ["PRD-3.2"],
+    "mode": "browser",
+    "currentlyImplemented": true,
+    "preconditions": ["evt-1 has at least one session"],
+    "steps": [
+      { "action": "navigate", "target": "/event/evt-1" },
+      { "action": "waitForSelector", "target": "h2:has-text('Sessions')" },
+      { "action": "countElements", "selector": "button[title='Delete session']", "storeAs": "initialCount" },
+      { "action": "hover", "target": ".card:first-child" },
+      { "action": "click", "target": "button[title='Delete session']", "index": 0 }
+    ],
+    "assertions": [
+      { "type": "elementCountDecreased", "selector": "button[title='Delete session']" }
+    ],
+    "expectedBehavior": "Hovering a session reveals delete button; clicking it removes the session",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-SES-004",
+    "title": "Add note to event",
+    "category": "sessions_and_notes",
+    "priority": "P0",
+    "weight": 5,
+    "prdRequirementIds": ["PRD-3.3"],
+    "mode": "browser",
+    "currentlyImplemented": true,
+    "preconditions": ["Navigate to evt-1"],
+    "steps": [
+      { "action": "navigate", "target": "/event/evt-1" },
+      { "action": "waitForSelector", "target": "h2:has-text('Notes')" },
+      { "action": "fill", "target": "textarea[placeholder*='Capture your thoughts']", "value": "Eval test note content" },
+      { "action": "click", "target": "button:has-text('Save Note')" }
+    ],
+    "assertions": [
+      { "type": "textVisible", "text": "Eval test note content" }
+    ],
+    "expectedBehavior": "Entering text and clicking 'Save Note' adds the note to the list",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-SES-005",
+    "title": "Delete note from event",
+    "category": "sessions_and_notes",
+    "priority": "P0",
+    "weight": 3,
+    "prdRequirementIds": ["PRD-3.4"],
+    "mode": "browser",
+    "currentlyImplemented": true,
+    "preconditions": ["evt-1 has at least one note"],
+    "steps": [
+      { "action": "navigate", "target": "/event/evt-1" },
+      { "action": "waitForSelector", "target": "h2:has-text('Notes')" },
+      { "action": "hover", "target": ".card >> nth=-1" },
+      { "action": "click", "target": "button[title='Delete note']", "index": 0 }
+    ],
+    "assertions": [
+      { "type": "elementCountDecreased", "selector": "button[title='Delete note']" }
+    ],
+    "expectedBehavior": "Hovering a note reveals delete button; clicking it removes the note",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-SES-006",
+    "title": "Sessions and notes persist after page refresh",
+    "category": "sessions_and_notes",
+    "priority": "P1",
+    "weight": 3,
+    "prdRequirementIds": ["PRD-3.5"],
+    "mode": "browser",
+    "currentlyImplemented": true,
+    "preconditions": ["A session and note were added in prior tests"],
+    "steps": [
+      { "action": "navigate", "target": "/event/evt-1" },
+      { "action": "waitForSelector", "target": "h2:has-text('Sessions')" },
+      { "action": "countElements", "selector": "h2:has-text('Sessions') + span, h4.font-semibold", "storeAs": "beforeCount" },
+      { "action": "reload" },
+      { "action": "waitForSelector", "target": "h2:has-text('Sessions')" }
+    ],
+    "assertions": [
+      { "type": "visible", "selector": "h2:has-text('Sessions')" },
+      { "type": "visible", "selector": "h2:has-text('Notes')" }
+    ],
+    "expectedBehavior": "After refresh, sessions and notes added earlier are still visible",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-SES-007",
+    "title": "Event dashboard usable without AI generation",
+    "category": "sessions_and_notes",
+    "priority": "P1",
+    "weight": 2,
+    "prdRequirementIds": ["PRD-3.6"],
+    "mode": "browser",
+    "currentlyImplemented": true,
+    "preconditions": ["Navigate to evt-2 (no AI content)"],
+    "steps": [
+      { "action": "navigate", "target": "/event/evt-2" },
+      { "action": "waitForSelector", "target": "h1.gradient-text" }
+    ],
+    "assertions": [
+      { "type": "textContent", "selector": "h1.gradient-text", "contains": "React Summit 2026" },
+      { "type": "visible", "selector": "h2:has-text('Sessions')" },
+      { "type": "visible", "selector": "h2:has-text('Notes')" },
+      { "type": "visible", "selector": "button:has-text('Generate')" },
+      { "type": "notVisible", "selector": "button:has-text('Regenerate')" }
+    ],
+    "expectedBehavior": "Event without AI content shows sessions, notes, and a 'Generate' (not 'Regenerate') button",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-AI-001",
+    "title": "Generate API returns valid content structure",
+    "category": "ai_generation",
+    "priority": "P0",
+    "weight": 5,
+    "prdRequirementIds": ["PRD-4.1"],
+    "mode": "api",
+    "currentlyImplemented": true,
+    "preconditions": [],
+    "steps": [
+      {
+        "action": "post",
+        "target": "/api/ai/generate",
+        "body": {
+          "title": "Test Conference",
+          "date": "2026-06-01",
+          "location": "New York, NY",
+          "description": "A test conference",
+          "sessions": [{ "id": "s1", "title": "Test Talk", "speaker": "Speaker A", "time": "10:00 AM", "takeaway": "Key insight" }],
+          "notes": [{ "id": "n1", "content": "Important note", "createdAt": "2026-06-01T10:00:00Z" }],
+          "authorName": "Test Author"
+        }
+      }
+    ],
+    "assertions": [
+      { "type": "status", "expected": 200 },
+      { "type": "jsonPath", "path": "aiContent.recap", "notEmpty": true },
+      { "type": "jsonPath", "path": "aiContent.linkedInDraft", "notEmpty": true },
+      { "type": "jsonPath", "path": "aiContent.twitterDraft", "notEmpty": true },
+      { "type": "jsonPath", "path": "aiContent.generatedAt", "notEmpty": true }
+    ],
+    "expectedBehavior": "POST with full event data returns 200 with aiContent containing recap, linkedInDraft, twitterDraft, generatedAt",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-AI-002",
+    "title": "Generate API handles minimal input (title only)",
+    "category": "ai_generation",
+    "priority": "P0",
+    "weight": 3,
+    "prdRequirementIds": ["PRD-4.1"],
+    "mode": "api",
+    "currentlyImplemented": true,
+    "preconditions": [],
+    "steps": [
+      {
+        "action": "post",
+        "target": "/api/ai/generate",
+        "body": {
+          "title": "Minimal Event",
+          "date": "2026-06-01",
+          "location": "Remote",
+          "description": "",
+          "sessions": [],
+          "notes": [],
+          "authorName": "Author"
+        }
+      }
+    ],
+    "assertions": [
+      { "type": "status", "expected": 200 },
+      { "type": "jsonPath", "path": "aiContent.recap", "contains": "Minimal Event" },
+      { "type": "jsonPath", "path": "aiContent.linkedInDraft", "notEmpty": true }
+    ],
+    "expectedBehavior": "API generates content even with empty sessions and notes, using fallback text",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-AI-003",
+    "title": "Generate API rejects missing title",
+    "category": "ai_generation",
+    "priority": "P0",
+    "weight": 3,
+    "prdRequirementIds": ["PRD-4.1"],
+    "mode": "api",
+    "currentlyImplemented": true,
+    "preconditions": [],
+    "steps": [
+      { "action": "post", "target": "/api/ai/generate", "body": { "title": "" } }
+    ],
+    "assertions": [
+      { "type": "status", "expected": 400 },
+      { "type": "jsonPath", "path": "error", "notEmpty": true }
+    ],
+    "expectedBehavior": "POST with empty title returns 400 with error message",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-AI-004",
+    "title": "UI generation flow: Generate button produces AI content",
+    "category": "ai_generation",
+    "priority": "P0",
+    "weight": 5,
+    "prdRequirementIds": ["PRD-4.2"],
+    "mode": "browser",
+    "currentlyImplemented": true,
+    "preconditions": ["Navigate to evt-2 (no existing AI content)"],
+    "steps": [
+      { "action": "navigate", "target": "/event/evt-2" },
+      { "action": "waitForSelector", "target": "button:has-text('Generate')" },
+      { "action": "click", "target": "button:has-text('Generate')" },
+      { "action": "waitForSelector", "target": "button:has-text('Recap')", "timeout": 15000 }
+    ],
+    "assertions": [
+      { "type": "visible", "selector": "button:has-text('Recap')" },
+      { "type": "visible", "selector": "button:has-text('LinkedIn')" },
+      { "type": "visible", "selector": "button:has-text('X / Twitter')" },
+      { "type": "visible", "selector": "pre.whitespace-pre-wrap" }
+    ],
+    "expectedBehavior": "Clicking Generate triggers API call, and after loading, Recap/LinkedIn/Twitter tabs appear with content",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-AI-005",
+    "title": "Regeneration updates generatedAt timestamp",
+    "category": "ai_generation",
+    "priority": "P1",
+    "weight": 2,
+    "prdRequirementIds": ["PRD-4.3"],
+    "mode": "browser",
+    "currentlyImplemented": true,
+    "preconditions": ["evt-1 has existing AI content"],
+    "steps": [
+      { "action": "navigate", "target": "/event/evt-1" },
+      { "action": "waitForSelector", "target": "button:has-text('Regenerate')" },
+      { "action": "getText", "selector": "text=Generated", "storeAs": "oldTimestamp" },
+      { "action": "click", "target": "button:has-text('Regenerate')" },
+      { "action": "waitForTimeout", "timeout": 3000 }
+    ],
+    "assertions": [
+      { "type": "visible", "selector": "pre.whitespace-pre-wrap" }
+    ],
+    "expectedBehavior": "Clicking Regenerate produces fresh content with updated timestamp",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-AI-006",
+    "title": "Generated recap content is grounded in event data",
+    "category": "ai_generation",
+    "priority": "P1",
+    "weight": 3,
+    "prdRequirementIds": ["PRD-4.4"],
+    "mode": "api",
+    "currentlyImplemented": true,
+    "preconditions": [],
+    "steps": [
+      {
+        "action": "post",
+        "target": "/api/ai/generate",
+        "body": {
+          "title": "Grounding Test Conf",
+          "date": "2026-07-10",
+          "location": "Tokyo, JP",
+          "description": "Testing grounding",
+          "sessions": [{ "id": "s1", "title": "Deep Learning Workshop", "speaker": "Dr. Smith", "time": "09:00 AM", "takeaway": "Neural nets are key" }],
+          "notes": [{ "id": "n1", "content": "Amazing workshop on neural networks", "createdAt": "2026-07-10T09:00:00Z" }],
+          "authorName": "Tester"
+        }
+      }
+    ],
+    "assertions": [
+      { "type": "jsonPath", "path": "aiContent.recap", "contains": "Grounding Test Conf" },
+      { "type": "jsonPath", "path": "aiContent.recap", "contains": "Tokyo, JP" },
+      { "type": "jsonPath", "path": "aiContent.recap", "contains": "Deep Learning Workshop" },
+      { "type": "jsonPath", "path": "aiContent.recap", "contains": "Dr. Smith" },
+      { "type": "jsonPath", "path": "aiContent.linkedInDraft", "contains": "Tester" }
+    ],
+    "expectedBehavior": "Generated content includes event title, location, session titles, speaker names, and author name",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-PUB-001",
+    "title": "Public event page renders for seed event",
+    "category": "publish_and_public_page",
+    "priority": "P0",
+    "weight": 5,
+    "prdRequirementIds": ["PRD-5.1"],
+    "mode": "browser",
+    "currentlyImplemented": true,
+    "preconditions": ["Seed data loaded in same browser context"],
+    "steps": [
+      { "action": "navigate", "target": "/" },
+      { "action": "waitForSelector", "target": "h1.gradient-text" },
+      { "action": "navigate", "target": "/public/event/evt-1" },
+      { "action": "waitForSelector", "target": "h1.gradient-text" }
+    ],
+    "assertions": [
+      { "type": "textContent", "selector": "h1.gradient-text", "contains": "AI DevCon 2026" },
+      { "type": "visible", "selector": "footer" },
+      { "type": "textVisible", "text": "Powered by" }
+    ],
+    "expectedBehavior": "Public page for evt-1 renders with title, content, and EventScribe footer",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-PUB-002",
+    "title": "Public page shows 404 UI for nonexistent event",
+    "category": "publish_and_public_page",
+    "priority": "P1",
+    "weight": 2,
+    "prdRequirementIds": ["PRD-5.2"],
+    "mode": "browser",
+    "currentlyImplemented": true,
+    "preconditions": ["Seed data loaded"],
+    "steps": [
+      { "action": "navigate", "target": "/" },
+      { "action": "navigate", "target": "/public/event/nonexistent-id-12345" },
+      { "action": "waitForSelector", "target": "h1:has-text('Event Not Found')" }
+    ],
+    "assertions": [
+      { "type": "textVisible", "text": "Event Not Found" }
+    ],
+    "expectedBehavior": "Navigating to a nonexistent event ID shows 'Event Not Found' message",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-PUB-003",
+    "title": "Public page displays sessions, notes, and recap when present",
+    "category": "publish_and_public_page",
+    "priority": "P1",
+    "weight": 3,
+    "prdRequirementIds": ["PRD-5.3"],
+    "mode": "browser",
+    "currentlyImplemented": true,
+    "preconditions": ["Seed data loaded, same browser context"],
+    "steps": [
+      { "action": "navigate", "target": "/" },
+      { "action": "navigate", "target": "/public/event/evt-1" },
+      { "action": "waitForSelector", "target": "h1.gradient-text" }
+    ],
+    "assertions": [
+      { "type": "visible", "selector": "h2:has-text('Sessions')" },
+      { "type": "visible", "selector": "h2:has-text('Notes')" },
+      { "type": "visible", "selector": "h2:has-text('AI-Generated Recap')" }
+    ],
+    "expectedBehavior": "Public page for evt-1 shows sessions, notes, and the AI-generated recap sections",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-PUB-004",
+    "title": "Public page NOT accessible from clean browser (PRD gap)",
+    "category": "publish_and_public_page",
+    "priority": "P0",
+    "weight": 5,
+    "prdRequirementIds": ["PRD-5.4"],
+    "mode": "browser",
+    "currentlyImplemented": false,
+    "preconditions": ["Brand new browser context with no localStorage"],
+    "steps": [
+      { "action": "newContext" },
+      { "action": "navigate", "target": "/public/event/evt-1" },
+      { "action": "waitForSelector", "target": "h1", "timeout": 10000 }
+    ],
+    "assertions": [
+      { "type": "textVisible", "text": "Event Not Found" }
+    ],
+    "expectedBehavior": "A clean browser without localStorage cannot see the event — proves public pages are not truly public. This is an expected PRD gap.",
+    "failureClassification": "prd_gap"
+  },
+  {
+    "id": "TC-PUB-005",
+    "title": "No explicit publish workflow exists (PRD gap)",
+    "category": "publish_and_public_page",
+    "priority": "P0",
+    "weight": 5,
+    "prdRequirementIds": ["PRD-5.5"],
+    "mode": "browser",
+    "currentlyImplemented": false,
+    "preconditions": ["Navigate to evt-1 dashboard"],
+    "steps": [
+      { "action": "navigate", "target": "/event/evt-1" },
+      { "action": "waitForSelector", "target": "h1.gradient-text" }
+    ],
+    "assertions": [
+      { "type": "notVisible", "selector": "button:has-text('Publish')" },
+      { "type": "notVisible", "selector": "button:has-text('Review')" }
+    ],
+    "expectedBehavior": "No 'Publish' or 'Review' button exists on the event dashboard. The public page link is unguarded. This is an expected PRD gap.",
+    "failureClassification": "prd_gap"
+  },
+  {
+    "id": "TC-TL-001",
+    "title": "Homepage displays event timeline with seed events",
+    "category": "timeline_and_persistence",
+    "priority": "P0",
+    "weight": 5,
+    "prdRequirementIds": ["PRD-6.1"],
+    "mode": "browser",
+    "currentlyImplemented": true,
+    "preconditions": ["Fresh browser context with seed data"],
+    "steps": [
+      { "action": "navigate", "target": "/" },
+      { "action": "waitForSelector", "target": "h2:has-text('Event Timeline')" }
+    ],
+    "assertions": [
+      { "type": "visible", "selector": "h2:has-text('Event Timeline')" },
+      { "type": "textVisible", "text": "2 events" },
+      { "type": "textVisible", "text": "AI DevCon 2026" },
+      { "type": "textVisible", "text": "React Summit 2026" }
+    ],
+    "expectedBehavior": "Homepage shows 'Event Timeline' with 2 seed events and correct count",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-TL-002",
+    "title": "Newly created event appears in timeline",
+    "category": "timeline_and_persistence",
+    "priority": "P0",
+    "weight": 5,
+    "prdRequirementIds": ["PRD-6.2"],
+    "mode": "browser",
+    "currentlyImplemented": true,
+    "preconditions": ["Seed data loaded"],
+    "steps": [
+      { "action": "navigate", "target": "/event/new" },
+      { "action": "fill", "target": "#event-url", "value": "https://example.com" },
+      { "action": "click", "target": "button[type='submit']" },
+      { "action": "waitForURL", "pattern": "**/event/**" },
+      { "action": "navigate", "target": "/" },
+      { "action": "waitForSelector", "target": "h2:has-text('Event Timeline')" }
+    ],
+    "assertions": [
+      { "type": "textVisible", "text": "3 events" }
+    ],
+    "expectedBehavior": "After creating a new event, navigating home shows 3 events in the timeline",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-TL-003",
+    "title": "Events sorted by date descending",
+    "category": "timeline_and_persistence",
+    "priority": "P1",
+    "weight": 2,
+    "prdRequirementIds": ["PRD-6.3"],
+    "mode": "browser",
+    "currentlyImplemented": true,
+    "preconditions": ["Seed data loaded"],
+    "steps": [
+      { "action": "navigate", "target": "/" },
+      { "action": "waitForSelector", "target": "h2:has-text('Event Timeline')" }
+    ],
+    "assertions": [
+      { "type": "elementOrder", "selector": "h3", "first": "React Summit 2026", "second": "AI DevCon 2026" }
+    ],
+    "expectedBehavior": "React Summit (April 22) appears before AI DevCon (March 15) since events sort date-descending",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-TL-004",
+    "title": "Deleting event removes it from timeline",
+    "category": "timeline_and_persistence",
+    "priority": "P0",
+    "weight": 3,
+    "prdRequirementIds": ["PRD-6.4"],
+    "mode": "browser",
+    "currentlyImplemented": true,
+    "preconditions": ["Seed data loaded"],
+    "steps": [
+      { "action": "navigate", "target": "/" },
+      { "action": "waitForSelector", "target": "h2:has-text('Event Timeline')" },
+      { "action": "dialogAccept" },
+      { "action": "hover", "target": ".card:first-child" },
+      { "action": "click", "target": "button[title='Delete event']" }
+    ],
+    "assertions": [
+      { "type": "textVisible", "text": "1 event" }
+    ],
+    "expectedBehavior": "Deleting an event via the trash button (with confirm dialog) removes it from the timeline",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-SHARE-001",
+    "title": "Copy button copies AI content to clipboard",
+    "category": "share_flow",
+    "priority": "P1",
+    "weight": 3,
+    "prdRequirementIds": ["PRD-7.1"],
+    "mode": "browser",
+    "currentlyImplemented": true,
+    "preconditions": ["evt-1 has AI content, same browser context"],
+    "steps": [
+      { "action": "navigate", "target": "/event/evt-1" },
+      { "action": "waitForSelector", "target": "pre.whitespace-pre-wrap" },
+      { "action": "click", "target": "button:has-text('Copy')" }
+    ],
+    "assertions": [
+      { "type": "textVisible", "text": "Copied!" }
+    ],
+    "expectedBehavior": "Clicking Copy changes button text to 'Copied!' confirming clipboard action",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-SHARE-002",
+    "title": "LinkedIn and X/Twitter share buttons present on respective tabs",
+    "category": "share_flow",
+    "priority": "P1",
+    "weight": 3,
+    "prdRequirementIds": ["PRD-7.2"],
+    "mode": "browser",
+    "currentlyImplemented": true,
+    "preconditions": ["evt-1 has AI content"],
+    "steps": [
+      { "action": "navigate", "target": "/event/evt-1" },
+      { "action": "waitForSelector", "target": "pre.whitespace-pre-wrap" },
+      { "action": "click", "target": "button:has-text('LinkedIn')" },
+      { "action": "waitForSelector", "target": "button:has-text('Post to LinkedIn')" },
+      { "action": "click", "target": "button:has-text('X / Twitter')" },
+      { "action": "waitForSelector", "target": "button:has-text('Post to X')" }
+    ],
+    "assertions": [
+      { "type": "visible", "selector": "button:has-text('Post to X')" }
+    ],
+    "expectedBehavior": "LinkedIn tab shows 'Post to LinkedIn' button, X/Twitter tab shows 'Post to X' button",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-ROUTE-001",
+    "title": "All page routes return HTTP 200",
+    "category": "route_health",
+    "priority": "P0",
+    "weight": 5,
+    "prdRequirementIds": ["PRD-8.1"],
+    "mode": "api",
+    "currentlyImplemented": true,
+    "preconditions": [],
+    "steps": [
+      { "action": "get", "target": "/" },
+      { "action": "get", "target": "/event/new" },
+      { "action": "get", "target": "/event/evt-1" },
+      { "action": "get", "target": "/public/event/evt-1" }
+    ],
+    "assertions": [
+      { "type": "allStatus", "expected": 200 }
+    ],
+    "expectedBehavior": "All page routes respond with 200 OK",
+    "failureClassification": "bug"
+  },
+  {
+    "id": "TC-ROUTE-002",
+    "title": "API routes reject GET method",
+    "category": "route_health",
+    "priority": "P1",
+    "weight": 2,
+    "prdRequirementIds": ["PRD-8.2"],
+    "mode": "api",
+    "currentlyImplemented": true,
+    "preconditions": [],
+    "steps": [
+      { "action": "get", "target": "/api/events/extract" },
+      { "action": "get", "target": "/api/ai/generate" }
+    ],
+    "assertions": [
+      { "type": "allStatus", "expected": 405 }
+    ],
+    "expectedBehavior": "API routes should return 405 Method Not Allowed for GET requests",
+    "failureClassification": "bug"
+  }
+]

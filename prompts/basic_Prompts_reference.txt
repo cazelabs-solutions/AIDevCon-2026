@@ -1,0 +1,61 @@
+Prompt 1:
+Create a professional README.md file for a new project called EventScribe.
+
+Project definition: EventScribe is an AI-powered personal event learning hub
+and shareable journey microsite. It helps event attendees capture, enrich,
+organise, publish, and revisit what they learned from conferences, workshops,
+meetups, webinars, and similar events.
+
+Purpose: Turn fragmented event notes, screenshots, and one-off social posts
+into a structured, polished, and continuously growing public learning portfolio.
+Each user gets a persistent personal microsite with event pages, session notes,
+AI-generated summaries, social drafts, and a multi-event timeline.
+
+Tech stack: Next.js on Vercel, Vercel Serverless Functions for
+server-side logic, Vercel Blob for object storage, provider-agnostic AI
+generation layer routed through Vercel AI Gateway.
+
+Key features for MVP:
+- Personal profile and public landing page
+- Event creation with auto-extraction from public event URLs
+- Session and note capture (event-level and session-level)
+- AI-generated event recap, session summaries, key takeaways, and social drafts
+- Public event page publishing with stable URLs
+- Multi-event timeline on the user profile
+
+Include sections for: Project Overview, Features, Tech Stack, Getting Started
+(prerequisites, installation, running locally), Project Structure (placeholder),
+Deployment, Contributing, and License (MIT).
+Keep it concise and professional. We will update it as the project evolves.
+
+
+
+
+Prompt2:
+
+initial Basic Prompt :
+Build EventScribe (detailed product description attached below) - a personal event learning microsite using Next.js.
+Features needed:
+- Personal profile page with name, bio, and image
+- Create event form that accepts an event URL and extracts metadata
+- Session and notes capture per event
+- AI-generated event recap and LinkedIn/X social drafts
+- Public event page with stable URL
+- Multi-event timeline on the profile page
+Use Vercel for hosting and Vercel Blob for storage.
+Make it functional end-to-end.
+product description:
+ventScribe is an AI-powered personal event learning hub that transforms fragmented event experiences — notes, screenshots, bookmarks, and one-off social posts — into a structured, polished, and continuously growing public learning portfolio.
+The product serves conference attendees, workshop participants, professionals building public learning portfolios, and students documenting their development journey. It is user-first (benefiting the attendee, not the event organiser) and designed for repeated use across many events over time.
+The core problem it solves: capturing learning at events is easy, but organising, enriching, and reusing that knowledge is disproportionately hard. The typical post-event output is a single social post that provides no lasting structure and contributes nothing to the user's long-term professional narrative.
+Each user gets a persistent personal microsite with a public profile page, a multi-event timeline, and individual event pages — eliminating the need to build a website or write long-form articles from scratch.
+The end-to-end user journey follows a linear workflow: create personal site → add event from URL → system auto-extracts metadata → user reviews and corrects → add attended sessions and notes → generate AI content (recap, summaries, takeaways, social drafts) → user reviews and approves → publish public event page → timeline updates automatically.
+The AI generation layer produces five distinct content types independently: event recap, per-session summaries with key takeaways, a first-person "what I learned" reflection, a LinkedIn draft post, and an X draft post. Each section can be regenerated independently without reprocessing the entire event.
+A critical product principle is that no AI-generated content is ever published without explicit user approval. The user remains the final editor and publisher at every stage — generation produces editable drafts, not published output.
+The extraction pipeline uses a three-stage approach for ingesting event metadata from public URLs: structured data first (JSON-LD, Open Graph), then HTML content parsing, then headless browser rendering as a last-resort fallback for JavaScript-heavy pages. Manual correction is always available as the ultimate fallback.
+The solution architecture is built on Vercel with Next.js (App Router), Vercel Serverless Functions for all server-side logic, Vercel Blob for object-first JSON and media storage, and the Vercel AI SDK with AI Gateway for provider-agnostic generation across 20+ model providers.
+The storage model uses a hierarchical path convention in Vercel Blob, storing each entity (user profile, event, session, note, generated section, publish manifest) as an independent JSON object. This keeps content portable, independently addressable, and simple to export.
+The MVP scope includes 20 functional requirements across five capability areas: personal site and identity (FR-01 to FR-03), event intake and extraction (FR-04 to FR-07), sessions and notes (FR-08 to FR-11), AI-assisted generation (FR-12 to FR-16), and public publishing and sharing (FR-17 to FR-20). Explicitly out of scope: social automation, deep crawling, collaborative editing, native mobile apps, and auto-publishing.
+The deployment model uses the Vercel CLI for direct command-line deployment (npx vercel --prod), with environment variables managed via vercel env add and evaluation suites run directly against the live deployment URL to test real production behaviour — serverless functions, Blob persistence, AI generation, and CDN delivery.
+The architecture is designed to remain fully operational on Vercel's free Hobby plan: 100 deployments/day, 1M function invocations/month, 1 GB Blob storage, 300-second function duration, and $5/month in AI Gateway credits — sufficient for individual users processing several events per month.
+Six product-level acceptance criteria define MVP completeness: a user can create a personal site, start an event from a URL with auto-extraction, add sessions and notes without AI dependency, generate all content types from saved data, publish a public event page to a stable URL with timeline update, and return later to add a second event without any redesign or data migration.

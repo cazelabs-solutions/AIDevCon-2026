@@ -1,0 +1,15 @@
+{
+  "name": "eventscribe-eval",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PRD-first automated eval framework for EventScribe",
+  "scripts": {
+    "eval": "node run-eval.js",
+    "report": "node report.js",
+    "eval:visible": "EVAL_HEADLESS=false node run-eval.js",
+    "setup": "npx playwright install chromium"
+  },
+  "dependencies": {
+    "playwright": "^1.40.0"
+  }
+}

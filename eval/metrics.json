@@ -1,0 +1,41 @@
+{
+  "compositeWeights": {
+    "prd_compliance_score": 0.70,
+    "live_execution_score": 0.20,
+    "reliability_and_evidence_score": 0.10
+  },
+  "categories": {
+    "profile_and_identity": {
+      "weight": 0.10,
+      "description": "User profile display, editing, and localStorage persistence"
+    },
+    "event_intake_extraction": {
+      "weight": 0.15,
+      "description": "Event creation from URL, extraction API contract, metadata editing"
+    },
+    "sessions_and_notes": {
+      "weight": 0.15,
+      "description": "Session and note CRUD operations, data persistence across refresh"
+    },
+    "ai_generation": {
+      "weight": 0.15,
+      "description": "AI recap/LinkedIn/Twitter generation, content quality, grounding checks"
+    },
+    "publish_and_public_page": {
+      "weight": 0.15,
+      "description": "Public page rendering, URL stability, cross-browser accessibility"
+    },
+    "timeline_and_persistence": {
+      "weight": 0.10,
+      "description": "Event timeline display, ordering, multi-event support, deletion"
+    },
+    "share_flow": {
+      "weight": 0.10,
+      "description": "Copy-to-clipboard, LinkedIn/X share intent buttons"
+    },
+    "route_health": {
+      "weight": 0.10,
+      "description": "HTTP status codes, route accessibility, method enforcement"
+    }
+  }
+}

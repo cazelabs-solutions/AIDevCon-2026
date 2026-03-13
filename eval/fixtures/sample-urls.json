@@ -1,0 +1,13 @@
+{
+  "valid": [
+    { "url": "https://example.com", "expectedTitleContains": "Example" },
+    { "url": "https://www.google.com", "expectedTitleContains": "Google" }
+  ],
+  "invalid": [
+    { "url": "", "expectedStatus": 400 },
+    { "url": 123, "expectedStatus": 400 }
+  ],
+  "unreachable": [
+    { "url": "https://this-domain-does-not-exist-99999.com", "expectedFallbackTitle": "Untitled Event" }
+  ]
+}
